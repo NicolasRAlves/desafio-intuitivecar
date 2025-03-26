@@ -1,0 +1,11 @@
+package com.intuitivecare;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class IntuitivecareApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(IntuitivecareApplication.class, args);
+	}
+}
