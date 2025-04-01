@@ -1,6 +1,7 @@
 package com.intuitivecare.controller;
 
 import com.intuitivecare.service.DownloadService;
+import com.intuitivecare.service.PdfExtractionService;
 import com.intuitivecare.service.ScraperService;
 import com.intuitivecare.service.ZipService;
 import org.springframework.core.io.Resource;
@@ -25,11 +26,13 @@ public class ScraperController {
     private final ScraperService scraperService;
     private final DownloadService downloadService;
     private final ZipService zipService;
+    private final PdfExtractionService pdfExtractionService;
 
-    public ScraperController(ScraperService scraperService, DownloadService downloadService, ZipService zipService) {
+    public ScraperController(ScraperService scraperService, DownloadService downloadService, ZipService zipService, PdfExtractionService pdfExtractionService) {
         this.scraperService = scraperService;
         this.downloadService = downloadService;
         this.zipService = zipService;
+        this.pdfExtractionService = pdfExtractionService;
     }
 
     @GetMapping("/executar")
@@ -78,6 +81,26 @@ public class ScraperController {
             return scraperService.obterLinksPDFs();
         } catch (IOException e) {
             return List.of("Erro ao buscar os PDFs: " + e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/transformar")
+    public ResponseEntity<Resource> transformarDados() {
+        try {
+            pdfExtractionService.extractAndProcessPdf();
+            Path zipFilePath = Paths.get("downloads/Teste_Nicolas.zip");
+            Resource resource = new UrlResource(zipFilePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFilePath.getFileName() + "\"")
+                        .body(resource);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
